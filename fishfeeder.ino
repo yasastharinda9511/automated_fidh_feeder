@@ -8,6 +8,7 @@
 #define button_3 10
 #define button_4  11
 #define button_5  12
+
 #define test_pin  13
 
 #define address0_hour 0x01
@@ -22,9 +23,9 @@
 #define I2C_1 16
 #define I2C_2 2
 
-#define motor_1 PD1
-#define motor_2 PD2
-#define motor_pwm PD5
+#define motor_1 0
+#define motor_2 1
+#define motor_pwm 5
 
 volatile int state=1;
 int set_time_index=0;
@@ -46,6 +47,7 @@ boolean button2_pressed=false;
 boolean button3_pressed=false;
 boolean button4_pressed=false;
 boolean button5_pressed=false;
+boolean instant=false;
 
 volatile boolean changed_display=true;
 volatile boolean double_dot_blink=true;
@@ -91,7 +93,7 @@ struct set_time_1 time1;
 struct set_time_1 time2;
 struct set_time_1 time3;
 void setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   
   pinMode(8,INPUT_PULLUP);
   pinMode(9,INPUT_PULLUP);
@@ -99,25 +101,29 @@ void setup() {
   pinMode(11,INPUT_PULLUP);
   pinMode(12,INPUT_PULLUP);
 
+  pinMode(motor_1,OUTPUT);
+  pinMode(motor_2,OUTPUT);
+  pinMode(motor_pwm,OUTPUT);
+  
   pinMode(test_pin,OUTPUT);
 
   pinMode(8,INPUT_PULLUP);
   pinMode(8,INPUT_PULLUP);
-  /*EEPROM.write(address0_hour, 10);
-  EEPROM.write(address0_minute, 12);
+  EEPROM.write(address0_hour, 8);
+  EEPROM.write(address0_minute, 0);
 
-  EEPROM.write(address1_hour, 5);
-  EEPROM.write(address1_minute, 6);
+  EEPROM.write(address1_hour, 12);
+  EEPROM.write(address1_minute, 1);
 
-  EEPROM.write(address2_hour, 7);
-  EEPROM.write(address2_minute, 8);*/
+  EEPROM.write(address2_hour, 4);
+  EEPROM.write(address2_minute, 30);
 
   
   lcd.begin();
   lcd.setCursor(0,0);
-  lcd.print("Automated");
+  lcd.print("   Automated  ");
   lcd.setCursor(0,1);
-  lcd.print("FishFeeder");
+  lcd.print("  Fish Feeder  ");
 
   //digitalWrite(test_pin,HIGH);
 
@@ -134,7 +140,7 @@ void loop() {
   mode_button_5_current_state=digitalRead(button_5);
   
   if(mode_button_1_current_state!= mode_button_1_pre_state and mode_button_1_current_state==0){
-    Serial.println("YASAS THARINDA BUTTON_1 PRESSED");
+    //Serial.println("YASAS THARINDA BUTTON_1 PRESSED");
     button1_pressed=true;
     }
    else{
@@ -142,7 +148,7 @@ void loop() {
     }
 
   if(mode_button_2_current_state!= mode_button_2_pre_state and mode_button_2_current_state==0){
-    Serial.println("YASAS THARINDA BUTTON_2 PRESSED");
+    //Serial.println("YASAS THARINDA BUTTON_2 PRESSED");
     button2_pressed=true;
     }
    else{
@@ -150,7 +156,7 @@ void loop() {
     }
 
     if(mode_button_3_current_state!= mode_button_3_pre_state and mode_button_3_current_state==0){
-    Serial.println("YASAS THARINDA BUTTON_3 PRESSED");
+    //Serial.println("YASAS THARINDA BUTTON_3 PRESSED");
     button3_pressed=true;
     }
    else{
@@ -158,7 +164,7 @@ void loop() {
     }
 
     if(mode_button_4_current_state!= mode_button_4_pre_state and mode_button_4_current_state==0){
-    Serial.println("YASAS THARINDA BUTTON_4 PRESSED");
+    //Serial.println("YASAS THARINDA BUTTON_4 PRESSED");
     button4_pressed=true;
     }
    else{
@@ -166,14 +172,14 @@ void loop() {
     }
 
     if(mode_button_5_current_state!= mode_button_5_pre_state and mode_button_5_current_state==0){
-    Serial.println("YASAS THARINDA BUTTON_5 PRESSED");
+    //Serial.println("YASAS THARINDA BUTTON_5 PRESSED");
     button5_pressed=true;
     }
    else{
     button5_pressed=false;
     }
 
-  Serial.print("button1_pressed :");
+  /*Serial.print("button1_pressed :");
   Serial.println(button1_pressed);
 
   Serial.print("button2_pressed :");
@@ -186,7 +192,7 @@ void loop() {
   Serial.println(button4_pressed);
 
   Serial.print("button5_pressed :");
-  Serial.println(button5_pressed);
+  Serial.println(button5_pressed);*/
 
   //Serial.println(mode_button_3_pre_state);
   //Serial.println(mode_button_3_current_state);
@@ -250,14 +256,18 @@ void print_lcd(){
             }
 
         if(button2_pressed){
+          //Serial.println("Yasasasasasasasasasassasasasaasasa");
           digitalWrite(motor_1,HIGH);
-          digitalWrite(motor_2,LOW);  
+          digitalWrite(motor_2,LOW); 
+          digitalWrite(motor_pwm,HIGH);
+          digitalWrite(test_pin,HIGH); 
+          delay(2000);
+          digitalWrite(motor_1,LOW);
+          digitalWrite(motor_2,LOW); 
+          digitalWrite(motor_pwm,LOW); 
+          digitalWrite(test_pin,LOW);
           }
 
-        if(button3_pressed){
-          digitalWrite(motor_1,HIGH);
-          digitalWrite(motor_2,LOW);  
-          }
         
   }
   
@@ -506,26 +516,23 @@ void search_remaining(){
   remaining1_minute=closest_minute%60;
   remaining1_hour=closest_minute/60;
 
-  Serial.print(remaining1_hour);
+  /*Serial.print(remaining1_hour);
   Serial.print(":");
   Serial.print(remaining1_minute);
   Serial.println("");
-  Serial.println(total_minute);
+  Serial.println(total_minute);*/
   
   
   }
 void time_equal_check(){
   
-  if(remaining_hour==0 && remaining_minute==0 && counter<20){
+  if(remaining1_hour==0 and remaining1_minute==0 and counter<5){
       digitalWrite(motor_1,HIGH);
-      digitalWrite(motor_2,LOW);  
-    }else{
+      digitalWrite(motor_2,LOW);
+      digitalWrite(motor_pwm,HIGH);
+    }else {
       digitalWrite(motor_1,LOW);
       digitalWrite(motor_2,LOW); 
+      digitalWrite(motor_pwm,LOW);
       }
-  
-  
   }
-
-
-  
